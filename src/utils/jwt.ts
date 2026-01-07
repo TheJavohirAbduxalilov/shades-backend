@@ -1,9 +1,17 @@
 ﻿import jwt from "jsonwebtoken";
 import { config } from "../config";
-import type { JwtPayload } from "../types";
 
-export const signToken = (payload: JwtPayload): string =>
-  jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+interface TokenPayload {
+  userId: number;
+  username: string;
+}
 
-export const verifyToken = (token: string): JwtPayload =>
-  jwt.verify(token, config.jwtSecret) as JwtPayload;
+export const generateToken = (payload: TokenPayload): string => {
+  return jwt.sign(payload, config.jwtSecret, {
+    expiresIn: config.jwtExpiresIn,
+  } as jwt.SignOptions);
+};
+
+export const verifyToken = (token: string): TokenPayload => {
+  return jwt.verify(token, config.jwtSecret) as TokenPayload;
+};

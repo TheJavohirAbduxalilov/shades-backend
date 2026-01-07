@@ -14,7 +14,15 @@ const parseOrigins = (value: string | undefined): string[] => {
     .filter((origin) => origin.length > 0);
 };
 
-export const config = {
+interface AppConfig {
+  port: number;
+  nodeEnv: string;
+  jwtSecret: string;
+  jwtExpiresIn: string;
+  corsOrigins: string[];
+}
+
+export const config: AppConfig = {
   port: toNumber(process.env.PORT, 3000),
   nodeEnv: process.env.NODE_ENV || "development",
   jwtSecret: process.env.JWT_SECRET || "your-super-secret-key-change-in-production",

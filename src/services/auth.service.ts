@@ -1,6 +1,6 @@
 ﻿import { prisma } from "../utils/prisma";
 import { ApiError } from "../utils/api-error";
-import { signToken } from "../utils/jwt";
+import { generateToken } from "../utils/jwt";
 import { verifyPassword } from "../utils/password";
 import type { AuthUser } from "../types";
 
@@ -25,7 +25,7 @@ export const login = async (username: string, password: string): Promise<{ user:
     throw new ApiError(401, "Invalid credentials");
   }
 
-  const token = signToken({ userId: user.id, username: user.username });
+  const token = generateToken({ userId: user.id, username: user.username });
 
   return {
     user: {
