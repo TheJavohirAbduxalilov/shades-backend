@@ -8,7 +8,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "prisma:seed": "ts-node prisma/seed.ts",
+    "prisma:seed": "npx ts-node prisma/seed.ts",
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "prisma": "^5.22.0",
-    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
 }
