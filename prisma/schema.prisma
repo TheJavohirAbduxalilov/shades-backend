@@ -1,0 +1,307 @@
+﻿generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Языки
+model Language {
+  code      String  @id @db.VarChar(10)
+  name      String  @db.VarChar(50)
+  isDefault Boolean @default(false) @map("is_default")
+
+  users                       User[]
+  shadeTypeTranslations       ShadeTypeTranslation[]
+  optionTypeTranslations      OptionTypeTranslation[]
+  optionValueTranslations     OptionValueTranslation[]
+  materialTranslations        MaterialTranslation[]
+  materialVariantTranslations MaterialVariantTranslation[]
+  servicePriceTranslations    ServicePriceTranslation[]
+  orderStatusTranslations     OrderStatusTranslation[]
+
+  @@map("languages")
+}
+
+// Пользователи
+model User {
+  id                    Int      @id @default(autoincrement())
+  username              String   @unique @db.VarChar(50)
+  passwordHash          String   @map("password_hash") @db.VarChar(255)
+  fullName              String   @map("full_name") @db.VarChar(100)
+  preferredLanguageCode String   @default("ru") @map("preferred_language_code") @db.VarChar(10)
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  preferredLanguage Language @relation(fields: [preferredLanguageCode], references: [code])
+  orders            Order[]
+
+  @@map("users")
+}
+
+// Заказы
+model Order {
+  id             Int         @id @default(autoincrement())
+  clientName     String      @map("client_name") @db.VarChar(100)
+  clientPhone    String      @map("client_phone") @db.VarChar(20)
+  clientAddress  String      @map("client_address") @db.VarChar(255)
+  notes          String?     @db.Text
+  visitDate      DateTime    @map("visit_date") @db.Date
+  status         OrderStatus @default(NEW)
+  assignedUserId Int?        @map("assigned_user_id")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  assignedUser User?    @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+  windows      Window[]
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  NEW          @map("new")
+  IN_PROGRESS  @map("in_progress")
+  MEASURED     @map("measured")
+  COMPLETED    @map("completed")
+}
+
+// Окна
+model Window {
+  id        Int      @id @default(autoincrement())
+  orderId   Int      @map("order_id")
+  name      String   @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  order  Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shades Shade[]
+
+  @@map("windows")
+}
+
+// Жалюзи
+model Shade {
+  id                   Int      @id @default(autoincrement())
+  windowId             Int      @map("window_id")
+  shadeTypeId          Int      @map("shade_type_id")
+  width                Decimal  @db.Decimal(10, 2)
+  height               Decimal  @db.Decimal(10, 2)
+  materialVariantId    Int      @map("material_variant_id")
+  installationIncluded Boolean  @default(false) @map("installation_included")
+  removalIncluded      Boolean  @default(false) @map("removal_included")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  window          Window          @relation(fields: [windowId], references: [id], onDelete: Cascade)
+  shadeType       ShadeType       @relation(fields: [shadeTypeId], references: [id])
+  materialVariant MaterialVariant @relation(fields: [materialVariantId], references: [id])
+  options         ShadeOption[]
+
+  @@map("shades")
+}
+
+// Выбранные параметры жалюзи
+model ShadeOption {
+  id            Int @id @default(autoincrement())
+  shadeId       Int @map("shade_id")
+  optionTypeId  Int @map("option_type_id")
+  optionValueId Int @map("option_value_id")
+
+  shade       Shade       @relation(fields: [shadeId], references: [id], onDelete: Cascade)
+  optionType  OptionType  @relation(fields: [optionTypeId], references: [id])
+  optionValue OptionValue @relation(fields: [optionValueId], references: [id])
+
+  @@unique([shadeId, optionTypeId])
+  @@map("shade_options")
+}
+
+// === СПРАВОЧНИКИ ===
+
+// Типы жалюзи
+model ShadeType {
+  id        Int      @id @default(autoincrement())
+  minPrice  Decimal  @map("min_price") @db.Decimal(12, 2)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  translations ShadeTypeTranslation[]
+  optionTypes  OptionType[]
+  materials    ShadeTypeMaterial[]
+  shades       Shade[]
+
+  @@map("shade_types")
+}
+
+model ShadeTypeTranslation {
+  id           Int    @id @default(autoincrement())
+  shadeTypeId  Int    @map("shade_type_id")
+  languageCode String @map("language_code") @db.VarChar(10)
+  name         String @db.VarChar(100)
+
+  shadeType ShadeType @relation(fields: [shadeTypeId], references: [id], onDelete: Cascade)
+  language  Language  @relation(fields: [languageCode], references: [code])
+
+  @@unique([shadeTypeId, languageCode])
+  @@map("shade_type_translations")
+}
+
+// Типы параметров
+model OptionType {
+  id           Int @id @default(autoincrement())
+  shadeTypeId  Int @map("shade_type_id")
+  displayOrder Int @default(0) @map("display_order")
+
+  shadeType    ShadeType               @relation(fields: [shadeTypeId], references: [id], onDelete: Cascade)
+  translations OptionTypeTranslation[]
+  values       OptionValue[]
+  shadeOptions ShadeOption[]
+
+  @@map("option_types")
+}
+
+model OptionTypeTranslation {
+  id           Int    @id @default(autoincrement())
+  optionTypeId Int    @map("option_type_id")
+  languageCode String @map("language_code") @db.VarChar(10)
+  name         String @db.VarChar(100)
+
+  optionType OptionType @relation(fields: [optionTypeId], references: [id], onDelete: Cascade)
+  language   Language   @relation(fields: [languageCode], references: [code])
+
+  @@unique([optionTypeId, languageCode])
+  @@map("option_type_translations")
+}
+
+// Значения параметров
+model OptionValue {
+  id           Int @id @default(autoincrement())
+  optionTypeId Int @map("option_type_id")
+  displayOrder Int @default(0) @map("display_order")
+
+  optionType   OptionType               @relation(fields: [optionTypeId], references: [id], onDelete: Cascade)
+  translations OptionValueTranslation[]
+  shadeOptions ShadeOption[]
+
+  @@map("option_values")
+}
+
+model OptionValueTranslation {
+  id            Int    @id @default(autoincrement())
+  optionValueId Int    @map("option_value_id")
+  languageCode  String @map("language_code") @db.VarChar(10)
+  name          String @db.VarChar(100)
+
+  optionValue OptionValue @relation(fields: [optionValueId], references: [id], onDelete: Cascade)
+  language    Language    @relation(fields: [languageCode], references: [code])
+
+  @@unique([optionValueId, languageCode])
+  @@map("option_value_translations")
+}
+
+// Материалы
+model Material {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  translations MaterialTranslation[]
+  variants     MaterialVariant[]
+  shadeTypes   ShadeTypeMaterial[]
+
+  @@map("materials")
+}
+
+model MaterialTranslation {
+  id           Int    @id @default(autoincrement())
+  materialId   Int    @map("material_id")
+  languageCode String @map("language_code") @db.VarChar(10)
+  name         String @db.VarChar(100)
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageCode], references: [code])
+
+  @@unique([materialId, languageCode])
+  @@map("material_translations")
+}
+
+// Варианты материала (цвет + цена)
+model MaterialVariant {
+  id          Int     @id @default(autoincrement())
+  materialId  Int     @map("material_id")
+  colorHex    String? @map("color_hex") @db.VarChar(7)
+  imageUrl    String? @map("image_url") @db.VarChar(255)
+  pricePerSqm Decimal @map("price_per_sqm") @db.Decimal(12, 2)
+
+  material     Material                     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  translations MaterialVariantTranslation[]
+  shades       Shade[]
+
+  @@map("material_variants")
+}
+
+model MaterialVariantTranslation {
+  id                Int    @id @default(autoincrement())
+  materialVariantId Int    @map("material_variant_id")
+  languageCode      String @map("language_code") @db.VarChar(10)
+  colorName         String @map("color_name") @db.VarChar(100)
+
+  materialVariant MaterialVariant @relation(fields: [materialVariantId], references: [id], onDelete: Cascade)
+  language        Language        @relation(fields: [languageCode], references: [code])
+
+  @@unique([materialVariantId, languageCode])
+  @@map("material_variant_translations")
+}
+
+// Связь типов жалюзи и материалов
+model ShadeTypeMaterial {
+  shadeTypeId Int @map("shade_type_id")
+  materialId  Int @map("material_id")
+
+  shadeType ShadeType @relation(fields: [shadeTypeId], references: [id], onDelete: Cascade)
+  material  Material  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@id([shadeTypeId, materialId])
+  @@map("shade_type_materials")
+}
+
+// Цены на услуги
+model ServicePrice {
+  id          Int         @id @default(autoincrement())
+  serviceType ServiceType @unique @map("service_type")
+  price       Decimal     @db.Decimal(12, 2)
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  translations ServicePriceTranslation[]
+
+  @@map("service_prices")
+}
+
+enum ServiceType {
+  INSTALLATION @map("installation")
+  REMOVAL      @map("removal")
+}
+
+model ServicePriceTranslation {
+  id             Int    @id @default(autoincrement())
+  servicePriceId Int    @map("service_price_id")
+  languageCode   String @map("language_code") @db.VarChar(10)
+  name           String @db.VarChar(100)
+
+  servicePrice ServicePrice @relation(fields: [servicePriceId], references: [id], onDelete: Cascade)
+  language     Language     @relation(fields: [languageCode], references: [code])
+
+  @@unique([servicePriceId, languageCode])
+  @@map("service_price_translations")
+}
+
+// Переводы статусов заказа
+model OrderStatusTranslation {
+  id           Int         @id @default(autoincrement())
+  status       OrderStatus
+  languageCode String      @map("language_code") @db.VarChar(10)
+  name         String      @db.VarChar(100)
+
+  language Language @relation(fields: [languageCode], references: [code])
+
+  @@unique([status, languageCode])
+  @@map("order_status_translations")
+}
