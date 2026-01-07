@@ -82,6 +82,67 @@ const seed = async () => {
     },
   });
 
+  // Создание демо заказов
+  const orders = await Promise.all([
+    prisma.order.create({
+      data: {
+        clientName: "Алишер Каримов",
+        clientPhone: "+998901234567",
+        clientAddress: "ул. Навои 50, кв. 12, Ташкент",
+        notes: "Домофон 12, звонить заранее",
+        visitDate: new Date("2025-01-15"),
+        status: "NEW",
+        assignedUserId: 1,
+      },
+    }),
+    prisma.order.create({
+      data: {
+        clientName: "Мадина Рахимова",
+        clientPhone: "+998931112233",
+        clientAddress: "ул. Амира Темура 88, Ташкент",
+        notes: null,
+        visitDate: new Date("2025-01-16"),
+        status: "NEW",
+        assignedUserId: 1,
+      },
+    }),
+    prisma.order.create({
+      data: {
+        clientName: "Бахтиёр Усманов",
+        clientPhone: "+998901119988",
+        clientAddress: "ул. Бабура 25, кв. 5, Самарканд",
+        notes: "Большие окна в гостиной",
+        visitDate: new Date("2025-01-17"),
+        status: "IN_PROGRESS",
+        assignedUserId: 1,
+      },
+    }),
+    prisma.order.create({
+      data: {
+        clientName: "Нилуфар Азимова",
+        clientPhone: "+998881234567",
+        clientAddress: "ул. Мустакиллик 100, Бухара",
+        notes: "Офисное помещение, 6 окон",
+        visitDate: new Date("2025-01-10"),
+        status: "MEASURED",
+        assignedUserId: 2,
+      },
+    }),
+    prisma.order.create({
+      data: {
+        clientName: "Шухрат Назаров",
+        clientPhone: "+998901010101",
+        clientAddress: "ул. Алишера Навои 15, Наманган",
+        notes: null,
+        visitDate: new Date("2025-01-05"),
+        status: "COMPLETED",
+        assignedUserId: 2,
+      },
+    }),
+  ]);
+
+  console.log("Created orders:", orders.length);
+
   const shadeTypeHorizontal = await prisma.shadeType.create({
     data: {
       minPrice: 100000,
