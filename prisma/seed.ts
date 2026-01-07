@@ -64,8 +64,10 @@ const seed = async () => {
 
   const passwordHash = await bcrypt.hash("123456", 10);
 
-  const installer1 = await prisma.user.create({
-    data: {
+  const user1 = await prisma.user.upsert({
+    where: { username: "installer1" },
+    update: {},
+    create: {
       username: "installer1",
       passwordHash,
       fullName: "Иван Петров",
@@ -73,75 +75,18 @@ const seed = async () => {
     },
   });
 
-  const installer2 = await prisma.user.create({
-    data: {
+  const user2 = await prisma.user.upsert({
+    where: { username: "installer2" },
+    update: {},
+    create: {
       username: "installer2",
       passwordHash,
-      fullName: "Сергей Иванов",
+      fullName: "Алексей Сидоров",
       preferredLanguageCode: "ru",
     },
   });
 
-  // Создание демо заказов
-  const orders = await Promise.all([
-    prisma.order.create({
-      data: {
-        clientName: "Алишер Каримов",
-        clientPhone: "+998901234567",
-        clientAddress: "ул. Навои 50, кв. 12, Ташкент",
-        notes: "Домофон 12, звонить заранее",
-        visitDate: new Date("2025-01-15"),
-        status: "NEW",
-        assignedUserId: 1,
-      },
-    }),
-    prisma.order.create({
-      data: {
-        clientName: "Мадина Рахимова",
-        clientPhone: "+998931112233",
-        clientAddress: "ул. Амира Темура 88, Ташкент",
-        notes: null,
-        visitDate: new Date("2025-01-16"),
-        status: "NEW",
-        assignedUserId: 1,
-      },
-    }),
-    prisma.order.create({
-      data: {
-        clientName: "Бахтиёр Усманов",
-        clientPhone: "+998901119988",
-        clientAddress: "ул. Бабура 25, кв. 5, Самарканд",
-        notes: "Большие окна в гостиной",
-        visitDate: new Date("2025-01-17"),
-        status: "IN_PROGRESS",
-        assignedUserId: 1,
-      },
-    }),
-    prisma.order.create({
-      data: {
-        clientName: "Нилуфар Азимова",
-        clientPhone: "+998881234567",
-        clientAddress: "ул. Мустакиллик 100, Бухара",
-        notes: "Офисное помещение, 6 окон",
-        visitDate: new Date("2025-01-10"),
-        status: "MEASURED",
-        assignedUserId: 2,
-      },
-    }),
-    prisma.order.create({
-      data: {
-        clientName: "Шухрат Назаров",
-        clientPhone: "+998901010101",
-        clientAddress: "ул. Алишера Навои 15, Наманган",
-        notes: null,
-        visitDate: new Date("2025-01-05"),
-        status: "COMPLETED",
-        assignedUserId: 2,
-      },
-    }),
-  ]);
-
-  console.log("Created orders:", orders.length);
+  console.log("Created users:", user1.id, user2.id);
 
   const shadeTypeHorizontal = await prisma.shadeType.create({
     data: {
@@ -507,266 +452,57 @@ const seed = async () => {
     data: statusTranslations,
   });
 
-  const horizontalOption1 = shadeTypeHorizontal.optionTypes[0];
-  const horizontalOption2 = shadeTypeHorizontal.optionTypes[1];
-  const verticalOption1 = shadeTypeVertical.optionTypes[0];
-  const verticalOption2 = shadeTypeVertical.optionTypes[1];
-
-  horizontalOption1.values.sort((a, b) => a.displayOrder - b.displayOrder);
-  horizontalOption2.values.sort((a, b) => a.displayOrder - b.displayOrder);
-  verticalOption1.values.sort((a, b) => a.displayOrder - b.displayOrder);
-  verticalOption2.values.sort((a, b) => a.displayOrder - b.displayOrder);
-
-  const fabricWhite = materialFabric.variants.find((variant) => variant.colorHex === "#FFFFFF");
-  const fabricBeige = materialFabric.variants.find((variant) => variant.colorHex === "#F5F5DC");
-  const plasticWhite = materialPlastic.variants[0];
-  const woodNatural = materialWood.variants[0];
-
-  if (!fabricWhite || !fabricBeige || !plasticWhite || !woodNatural) {
-    throw new Error("Seed variants are not configured correctly.");
-  }
-
-  await prisma.order.create({
-    data: {
-      clientName: "Алишер Каримов",
-      clientPhone: "+998901234567",
-      clientAddress: "ул. Навои 50, кв. 12",
-      notes: "Домофон 12",
-      visitDate: new Date("2025-01-20"),
-      status: OrderStatus.NEW,
-      assignedUserId: installer1.id,
-      windows: {
-        create: [
-          {
-            name: "Окно 1",
-            shades: {
-              create: [
-                {
-                  shadeTypeId: shadeTypeHorizontal.id,
-                  width: 150,
-                  height: 180,
-                  materialVariantId: fabricWhite.id,
-                  installationIncluded: true,
-                  removalIncluded: false,
-                  options: {
-                    create: [
-                      {
-                        optionTypeId: horizontalOption1.id,
-                        optionValueId: horizontalOption1.values[0].id,
-                      },
-                      {
-                        optionTypeId: horizontalOption2.id,
-                        optionValueId: horizontalOption2.values[0].id,
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
+  await prisma.order.createMany({
+    data: [
+      {
+        clientName: "Алишер Каримов",
+        clientPhone: "+998901234567",
+        clientAddress: "ул. Навои 50, кв. 12, Ташкент",
+        notes: "Домофон 12",
+        visitDate: new Date("2025-01-15"),
+        status: "NEW",
+        assignedUserId: user1.id,
       },
-    },
+      {
+        clientName: "Мадина Рахимова",
+        clientPhone: "+998931112233",
+        clientAddress: "ул. Амира Темура 88, Ташкент",
+        notes: null,
+        visitDate: new Date("2025-01-16"),
+        status: "NEW",
+        assignedUserId: user1.id,
+      },
+      {
+        clientName: "Бахтиёр Усманов",
+        clientPhone: "+998901119988",
+        clientAddress: "ул. Бабура 25, Самарканд",
+        notes: "Большие окна",
+        visitDate: new Date("2025-01-17"),
+        status: "IN_PROGRESS",
+        assignedUserId: user1.id,
+      },
+      {
+        clientName: "Нилуфар Азимова",
+        clientPhone: "+998881234567",
+        clientAddress: "ул. Мустакиллик 100, Бухара",
+        notes: "Офис, 6 окон",
+        visitDate: new Date("2025-01-10"),
+        status: "MEASURED",
+        assignedUserId: user2.id,
+      },
+      {
+        clientName: "Шухрат Назаров",
+        clientPhone: "+998901010101",
+        clientAddress: "ул. Навои 15, Наманган",
+        notes: null,
+        visitDate: new Date("2025-01-05"),
+        status: "COMPLETED",
+        assignedUserId: user2.id,
+      },
+    ],
   });
 
-  await prisma.order.create({
-    data: {
-      clientName: "Мадина Умарова",
-      clientPhone: "+998901112233",
-      clientAddress: "ул. Мирзо Улугбек 10",
-      notes: "Позвонить за час",
-      visitDate: new Date("2025-01-18"),
-      status: OrderStatus.IN_PROGRESS,
-      assignedUserId: installer2.id,
-      windows: {
-        create: [
-          {
-            name: "Гостиная",
-            shades: {
-              create: [
-                {
-                  shadeTypeId: shadeTypeVertical.id,
-                  width: 200,
-                  height: 220,
-                  materialVariantId: plasticWhite.id,
-                  installationIncluded: true,
-                  removalIncluded: true,
-                  options: {
-                    create: [
-                      {
-                        optionTypeId: verticalOption1.id,
-                        optionValueId: verticalOption1.values[0].id,
-                      },
-                      {
-                        optionTypeId: verticalOption2.id,
-                        optionValueId: verticalOption2.values[1].id,
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-          {
-            name: "Спальня",
-            shades: {
-              create: [
-                {
-                  shadeTypeId: shadeTypeHorizontal.id,
-                  width: 130,
-                  height: 170,
-                  materialVariantId: fabricBeige.id,
-                  installationIncluded: false,
-                  removalIncluded: false,
-                  options: {
-                    create: [
-                      {
-                        optionTypeId: horizontalOption1.id,
-                        optionValueId: horizontalOption1.values[1].id,
-                      },
-                      {
-                        optionTypeId: horizontalOption2.id,
-                        optionValueId: horizontalOption2.values[1].id,
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  });
-
-  await prisma.order.create({
-    data: {
-      clientName: "Шахзод Ахмедов",
-      clientPhone: "+998907778899",
-      clientAddress: "пр. Амира Темура 75",
-      notes: "Охрана на входе",
-      visitDate: new Date("2025-01-16"),
-      status: OrderStatus.MEASURED,
-      assignedUserId: installer1.id,
-      windows: {
-        create: [
-          {
-            name: "Кухня",
-            shades: {
-              create: [
-                {
-                  shadeTypeId: shadeTypeHorizontal.id,
-                  width: 120,
-                  height: 140,
-                  materialVariantId: plasticWhite.id,
-                  installationIncluded: false,
-                  removalIncluded: false,
-                  options: {
-                    create: [
-                      {
-                        optionTypeId: horizontalOption1.id,
-                        optionValueId: horizontalOption1.values[0].id,
-                      },
-                      {
-                        optionTypeId: horizontalOption2.id,
-                        optionValueId: horizontalOption2.values[0].id,
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  });
-
-  await prisma.order.create({
-    data: {
-      clientName: "Ольга Смирнова",
-      clientPhone: "+998905556677",
-      clientAddress: "ул. Чиланзар 22",
-      notes: "Ключ у консьержа",
-      visitDate: new Date("2025-01-12"),
-      status: OrderStatus.COMPLETED,
-      assignedUserId: installer2.id,
-      windows: {
-        create: [
-          {
-            name: "Балкон",
-            shades: {
-              create: [
-                {
-                  shadeTypeId: shadeTypeVertical.id,
-                  width: 180,
-                  height: 200,
-                  materialVariantId: woodNatural.id,
-                  installationIncluded: true,
-                  removalIncluded: false,
-                  options: {
-                    create: [
-                      {
-                        optionTypeId: verticalOption1.id,
-                        optionValueId: verticalOption1.values[1].id,
-                      },
-                      {
-                        optionTypeId: verticalOption2.id,
-                        optionValueId: verticalOption2.values[2].id,
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  });
-
-  await prisma.order.create({
-    data: {
-      clientName: "Фирюза Ниязова",
-      clientPhone: "+998909991122",
-      clientAddress: "ул. Янгийул 5",
-      notes: null,
-      visitDate: new Date("2025-01-22"),
-      status: OrderStatus.NEW,
-      assignedUserId: installer1.id,
-      windows: {
-        create: [
-          {
-            name: "Детская",
-            shades: {
-              create: [
-                {
-                  shadeTypeId: shadeTypeHorizontal.id,
-                  width: 140,
-                  height: 160,
-                  materialVariantId: fabricWhite.id,
-                  installationIncluded: false,
-                  removalIncluded: true,
-                  options: {
-                    create: [
-                      {
-                        optionTypeId: horizontalOption1.id,
-                        optionValueId: horizontalOption1.values[1].id,
-                      },
-                      {
-                        optionTypeId: horizontalOption2.id,
-                        optionValueId: horizontalOption2.values[0].id,
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  });
+  console.log("Created 5 demo orders");
 };
 
 seed()
