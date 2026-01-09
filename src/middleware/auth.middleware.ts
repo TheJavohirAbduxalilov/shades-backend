@@ -23,6 +23,7 @@ export const authMiddleware: RequestHandler = async (req, _res, next) => {
         id: true,
         username: true,
         fullName: true,
+        role: true,
         preferredLanguageCode: true,
       },
     });
@@ -35,6 +36,7 @@ export const authMiddleware: RequestHandler = async (req, _res, next) => {
       id: user.id,
       username: user.username,
       fullName: user.fullName,
+      role: user.role,
       preferredLanguageCode: user.preferredLanguageCode as LanguageCode,
     };
 

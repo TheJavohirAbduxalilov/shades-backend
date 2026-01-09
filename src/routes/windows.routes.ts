@@ -6,8 +6,11 @@ import {
   deleteWindowHandler,
 } from "../controllers/windows.controller";
 import { validate } from "../middleware/validate.middleware";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 export const windowsRoutes = Router();
+
+windowsRoutes.use(authMiddleware);
 
 const orderIdParamSchema = z.object({
   orderId: z.string().regex(/^\d+$/),

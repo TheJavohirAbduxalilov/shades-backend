@@ -1,4 +1,4 @@
-﻿import { PrismaClient, OrderStatus, ServiceType } from "@prisma/client";
+import { PrismaClient, OrderStatus, ServiceType, UserRole } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
@@ -64,29 +64,43 @@ const seed = async () => {
 
   const passwordHash = await bcrypt.hash("123456", 10);
 
+  const admin = await prisma.user.upsert({
+    where: { username: "admin" },
+    update: {},
+    create: {
+      username: "admin",
+      passwordHash,
+      fullName: "Администратор",
+      role: UserRole.ADMIN,
+      preferredLanguageCode: "ru",
+    },
+  });
+
   const user1 = await prisma.user.upsert({
     where: { username: "installer1" },
-    update: {},
+    update: { role: UserRole.INSTALLER },
     create: {
       username: "installer1",
       passwordHash,
       fullName: "Иван Петров",
+      role: UserRole.INSTALLER,
       preferredLanguageCode: "ru",
     },
   });
 
   const user2 = await prisma.user.upsert({
     where: { username: "installer2" },
-    update: {},
+    update: { role: UserRole.INSTALLER },
     create: {
       username: "installer2",
       passwordHash,
       fullName: "Алексей Сидоров",
+      role: UserRole.INSTALLER,
       preferredLanguageCode: "ru",
     },
   });
 
-  console.log("Created users:", user1.id, user2.id);
+  console.log("Created users:", admin.id, user1.id, user2.id);
 
   const shadeTypeHorizontal = await prisma.shadeType.create({
     data: {
@@ -455,48 +469,53 @@ const seed = async () => {
   await prisma.order.createMany({
     data: [
       {
+        trackingCode: "DEMO0001",
         clientName: "Алишер Каримов",
         clientPhone: "+998901234567",
         clientAddress: "ул. Навои 50, кв. 12, Ташкент",
         notes: "Домофон 12",
         visitDate: new Date("2025-01-15"),
-        status: "NEW",
+        status: OrderStatus.NEW,
         assignedUserId: user1.id,
       },
       {
+        trackingCode: "DEMO0002",
         clientName: "Мадина Рахимова",
         clientPhone: "+998931112233",
         clientAddress: "ул. Амира Темура 88, Ташкент",
         notes: null,
         visitDate: new Date("2025-01-16"),
-        status: "NEW",
+        status: OrderStatus.NEW,
         assignedUserId: user1.id,
       },
       {
+        trackingCode: "DEMO0003",
         clientName: "Бахтиёр Усманов",
         clientPhone: "+998901119988",
         clientAddress: "ул. Бабура 25, Самарканд",
         notes: "Большие окна",
         visitDate: new Date("2025-01-17"),
-        status: "IN_PROGRESS",
+        status: OrderStatus.IN_PROGRESS,
         assignedUserId: user1.id,
       },
       {
+        trackingCode: "DEMO0004",
         clientName: "Нилуфар Азимова",
         clientPhone: "+998881234567",
         clientAddress: "ул. Мустакиллик 100, Бухара",
         notes: "Офис, 6 окон",
         visitDate: new Date("2025-01-10"),
-        status: "MEASURED",
+        status: OrderStatus.MEASURED,
         assignedUserId: user2.id,
       },
       {
+        trackingCode: "DEMO0005",
         clientName: "Шухрат Назаров",
         clientPhone: "+998901010101",
         clientAddress: "ул. Навои 15, Наманган",
         notes: null,
         visitDate: new Date("2025-01-05"),
-        status: "COMPLETED",
+        status: OrderStatus.COMPLETED,
         assignedUserId: user2.id,
       },
     ],

@@ -31,6 +31,7 @@ model User {
   username              String   @unique @db.VarChar(50)
   passwordHash          String   @map("password_hash") @db.VarChar(255)
   fullName              String   @map("full_name") @db.VarChar(100)
+  role                  UserRole @default(INSTALLER)
   preferredLanguageCode String   @default("ru") @map("preferred_language_code") @db.VarChar(10)
   createdAt             DateTime @default(now()) @map("created_at")
 
@@ -40,9 +41,15 @@ model User {
   @@map("users")
 }
 
+enum UserRole {
+  ADMIN     @map("admin")
+  INSTALLER @map("installer")
+}
+
 // Заказы
 model Order {
   id             Int         @id @default(autoincrement())
+  trackingCode   String      @unique @map("tracking_code") @db.VarChar(8)
   clientName     String      @map("client_name") @db.VarChar(100)
   clientPhone    String      @map("client_phone") @db.VarChar(20)
   clientAddress  String      @map("client_address") @db.VarChar(255)

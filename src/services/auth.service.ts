@@ -11,6 +11,7 @@ export const login = async (username: string, password: string): Promise<{ user:
       id: true,
       username: true,
       fullName: true,
+      role: true,
       preferredLanguageCode: true,
       passwordHash: true,
     },
@@ -32,6 +33,7 @@ export const login = async (username: string, password: string): Promise<{ user:
       id: user.id,
       username: user.username,
       fullName: user.fullName,
+      role: user.role,
       preferredLanguageCode: user.preferredLanguageCode as AuthUser["preferredLanguageCode"],
     },
     token,
@@ -45,6 +47,7 @@ export const getCurrentUser = async (userId: number): Promise<AuthUser> => {
       id: true,
       username: true,
       fullName: true,
+      role: true,
       preferredLanguageCode: true,
     },
   });
@@ -57,6 +60,7 @@ export const getCurrentUser = async (userId: number): Promise<AuthUser> => {
     id: user.id,
     username: user.username,
     fullName: user.fullName,
+    role: user.role,
     preferredLanguageCode: user.preferredLanguageCode as AuthUser["preferredLanguageCode"],
   };
 };

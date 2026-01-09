@@ -4,6 +4,8 @@ export type OrderStatusApi = "new" | "in_progress" | "measured" | "completed";
 
 export type ServiceTypeApi = "installation" | "removal";
 
+export type UserRole = "ADMIN" | "INSTALLER";
+
 export interface JwtPayload {
   userId: number;
   username: string;
@@ -13,6 +15,7 @@ export interface AuthUser {
   id: number;
   username: string;
   fullName: string;
+  role: UserRole;
   preferredLanguageCode: LanguageCode;
 }
 

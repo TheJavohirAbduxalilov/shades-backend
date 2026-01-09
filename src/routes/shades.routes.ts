@@ -6,8 +6,11 @@ import {
   deleteShadeHandler,
 } from "../controllers/shades.controller";
 import { validate } from "../middleware/validate.middleware";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 export const shadesRoutes = Router();
+
+shadesRoutes.use(authMiddleware);
 
 const windowIdParamSchema = z.object({
   windowId: z.string().regex(/^\d+$/),

@@ -5,15 +5,14 @@ import { windowsRoutes } from "./windows.routes";
 import { shadesRoutes } from "./shades.routes";
 import { catalogRoutes } from "./catalog.routes";
 import { priceRoutes } from "./price.routes";
-import { authMiddleware } from "../middleware/auth.middleware";
+import { usersRoutes } from "./users.routes";
 
 export const router = Router();
 
 router.use("/auth", authRoutes);
 
-router.use(authMiddleware);
-
-router.use(ordersRoutes);
+router.use("/orders", ordersRoutes);
+router.use("/users", usersRoutes);
 router.use(windowsRoutes);
 router.use(shadesRoutes);
 router.use(catalogRoutes);

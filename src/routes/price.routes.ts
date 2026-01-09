@@ -2,8 +2,11 @@
 import { z } from "zod";
 import { calculatePriceHandler } from "../controllers/price.controller";
 import { validate } from "../middleware/validate.middleware";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 export const priceRoutes = Router();
+
+priceRoutes.use(authMiddleware);
 
 const priceSchema = z.object({
   shadeTypeId: z.coerce.number().int().positive(),
