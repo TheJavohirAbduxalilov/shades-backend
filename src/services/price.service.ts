@@ -50,7 +50,7 @@ export const calculatePrice = async (params: {
 
   const minPrice = roundMoney(Number(shadeType.minPrice));
   const pricePerSqm = Number(materialVariant.pricePerSqm);
-  const area = (width * height) / 10000;
+  const area = (width * height) / 1000000;
   const basePrice = roundMoney(area * pricePerSqm);
   const priceBeforeServices = Math.max(basePrice, minPrice);
 
@@ -69,7 +69,7 @@ export const calculatePrice = async (params: {
     removalPrice,
     totalPrice,
     breakdown: {
-      areaCalculation: `${width} x ${height} / 10000 = ${areaFormatted} м²`,
+      areaCalculation: `${width} x ${height} / 1000000 = ${areaFormatted} м²`,
       basePriceCalculation: `${areaFormatted} м² x ${formatNumber(pricePerSqm)} сум = ${formatNumber(
         basePrice
       )} сум`,

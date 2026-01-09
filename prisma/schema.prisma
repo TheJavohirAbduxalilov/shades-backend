@@ -85,8 +85,8 @@ model Shade {
   id                   Int      @id @default(autoincrement())
   windowId             Int      @map("window_id")
   shadeTypeId          Int      @map("shade_type_id")
-  width                Decimal  @db.Decimal(10, 2)
-  height               Decimal  @db.Decimal(10, 2)
+  width                Decimal  @db.Decimal(10, 2) // в миллиметрах
+  height               Decimal  @db.Decimal(10, 2) // в миллиметрах
   materialVariantId    Int      @map("material_variant_id")
   installationIncluded Boolean  @default(false) @map("installation_included")
   removalIncluded      Boolean  @default(false) @map("removal_included")
